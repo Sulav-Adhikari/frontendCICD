@@ -27,4 +27,4 @@ jobs:
           password: ${{ secrets.VM_PASSWORD }}
           port: ${{ secrets.VM_PORT }} # Change this to your VM's SSH port if different
           script: |
-            cp -r ./dist/* /var/www/html
+            cp -r /home/sulav/actions-runner/_work/frontendCICD/frontendCICD/dist/* /var/www/html
