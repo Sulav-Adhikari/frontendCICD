@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Build project , increase version, copy to S3
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Github Checkout
         uses: actions/checkout@v2
@@ -19,13 +19,12 @@ jobs:
           npm install
           npm run build
 
-      - name: Push dist to aws S3 bucket
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set default.region $AWS_DEFAULT_REGION
-          aws s3 cp ./dist/ s3://sulav-s3-bucket --recursive
+      - name: Copy files to VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          password: ${{ secrets.VM_PASSWORD }}
+          port: ${{ secrets.VM_PORT }} # Change this to your VM's SSH port if different
+          script: |
+            sudo cp -r ./dist/* /var/www/html
