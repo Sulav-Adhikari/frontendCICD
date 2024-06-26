@@ -1,31 +1,29 @@
-name: Build frontend and push to S3 bucket
+name: Build docker image
+on: 
+  push:
+    branches:
+      - main
 
-on:
-  workflow_dispatch:
+env: 
+  CONTEXT_PATH: .
+  DOCKER_PATH: ./Dockerfile
+  IMAGE_NAME: todo
+  ENVIRONMENT: dev
 
 jobs:
-  build:
-    name: Build project , increase version, copy to S3
-    runs-on: self-hosted
-    steps:
-      - name: Github Checkout
-        uses: actions/checkout@v2
-      - name: Node version setup
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Install dependencies and Build
-        run: |
-          npm install
-          npm run build
+  deploy:
+    runs-on: self_hosted
 
-      - name: Copy files to VM
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          password: ${{ secrets.VM_PASSWORD }}
-          port: ${{ secrets.VM_PORT }} 
-          script: |
-            cp -r /home/sulav/actions-runner/_work/frontendCICD/frontendCICD/dist/* /var/www/html/
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build docker image
+        run: |
+          docker build -t ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} .
+
+      - name: Deploy in ec2 
+        run: |
+          /home/ubuntu/todo/prod/deploy.sh
+
 

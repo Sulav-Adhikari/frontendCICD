@@ -1,0 +1,19 @@
+networks:
+  app:
+    external: true
+
+services:
+  todo_dev:
+    image: todo:dev
+    restart: always
+    networks:
+      - app
+    volumes:
+      - ./storage:/var/www/html/storage
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.todo_dev.loadbalancer.server.port=90"
+      - "traefik.http.services.todo_dev.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.todo_dev.rule=Host(`dev.todo.org`)"
+      - "traefik.http.routers.todo_dev.entrypoints=websecure"
+      - "traefik.http.routers.todo_dev.tls.certresolver=production"
