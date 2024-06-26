@@ -24,6 +24,6 @@ jobs:
 
       - name: Deploy in ec2 
         run: |
-          /home/ubuntu/template/todo/dev/deploy.sh
+          /home/ubuntu/template/todo_dev/deploy.sh
 
 
