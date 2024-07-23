@@ -4,7 +4,7 @@ on:
     branches:
       - main
 
-      env:
+env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
   IMAGE_NAME: todo
