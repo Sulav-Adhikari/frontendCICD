@@ -39,17 +39,15 @@ jobs:
           sudo chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: Test SSH Connection
-        run: |
-          ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
+      # - name: Test SSH Connection
+      #   run: |
+      #     ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
 
       - name: Set docker context 
         run: |
           docker context create ec2 --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
-
-      - name: Verify Docker Context
-        run: |
           docker context ls
+
 
       - name: Load the docker image tar file to remote 
         run: | 
@@ -61,6 +59,6 @@ jobs:
           docker context use ec2
           docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
 
-      - name: Deploy docker compose
+      - name: Test SSH Connection
         run: |
-          /home/ubuntu/deploy.sh
+          ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} /ubuntu/home/deploy.sh
