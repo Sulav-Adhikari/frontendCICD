@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-
 env: 
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
@@ -12,18 +11,28 @@ env:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build docker image
-        run: |
-          docker build -t ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} .
+      # - name: Build docker image
+      #   run: |
+      #     docker build -t ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} .
 
-      - name: Deploy in ec2 
-        run: |
-          /home/ubuntu/template/todo_dev/deploy.sh
+      - name: SSh into server 
+        uses: appleboy/ssh-action@v1.0.3
+        with: 
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo docker stop 8016e03f2236
+
+
+      # - name: Deploy in ec2 
+      #   run: |
+      #     /home/ubuntu/template/todo_dev/deploy.sh
 
 
