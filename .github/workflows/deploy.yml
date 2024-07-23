@@ -1,8 +1,10 @@
-name: Test SSH Connection
+name: Deploy
 on:
-  repository_dispatch:
-    types:
-      - trigger-deploy
+  workflow_run:
+    workflows: ["Test"]
+  # repository_dispatch:
+  #   types:
+  #     - trigger-deploy
   # push:
   #   branches:
   #     - main
