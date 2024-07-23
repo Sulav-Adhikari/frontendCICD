@@ -27,7 +27,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
           script: |
+            mkdir /home/sulav/sshtest 
             sudo docker stop 8016e03f2236
 
 
