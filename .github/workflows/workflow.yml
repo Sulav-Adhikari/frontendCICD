@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
@@ -45,18 +44,16 @@ jobs:
 
       - name: Set docker context 
         run: |
-          docker context create ec2 --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
+          docker context create ${{ secrets.CONTEXT }} --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
           docker context ls
-
 
       - name: Load the docker image tar file to remote 
         run: | 
           scp -r ~/imagetar ${{secrets.USERNAME}}@${{secrets.HOST}}:/home/ubuntu
 
-
       - name: Load the docker image into remote context
         run: | 
-          docker context use ec2
+          docker context use$ {{ secrets.ONTEXT }}
           docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
 
       - name: Test SSH Connection
