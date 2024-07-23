@@ -27,9 +27,7 @@ jobs:
         
       - name: Save the docker image as tar file
         run: |
-          mkdir -p ~/imagetar
-          docker save ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} > ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
-          ls ~/imagetar
+          docker save -o ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}
 
       - name: Set up SSH
         run: |
@@ -47,15 +45,15 @@ jobs:
           docker context create ${{ secrets.CONTEXT }} --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
           docker context ls
 
-      - name: Load the docker image tar file to remote 
-        run: | 
-          scp -r ~/imagetar ${{secrets.USERNAME}}@${{secrets.HOST}}:/home/ubuntu
+      # - name: Load the docker image tar file to remote 
+      #   run: | 
+      #     scp -r ~/imagetar ${{secrets.USERNAME}}@${{secrets.HOST}}:/home/ubuntu
 
       - name: Load the docker image into remote context
         run: | 
           docker context use ${{ secrets.CONTEXT }}
-          docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
+          docker load -i ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
 
-      - name: Test SSH Connection
+      - name: Deploy in ec2
         run: |
-          ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} /home/ubuntu/deploy.sh
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} /home/ubuntu/deploy.sh
