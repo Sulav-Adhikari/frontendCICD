@@ -1,8 +1,11 @@
 name: Test SSH Connection
 on:
-  push:
-    branches:
-      - main
+  repository_dispatch:
+    types:
+      - trigger-deploy
+  # push:
+  #   branches:
+  #     - main
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
