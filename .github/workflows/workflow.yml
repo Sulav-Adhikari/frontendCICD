@@ -51,8 +51,8 @@ jobs:
         run: |
           docker context ls
 
-      # - name: Load the docker image into remote context
-      #   run: | 
-      #     docker context use ec2
+      - name: Load the docker image into remote context
+        run: | 
+          docker context use ec2
 
-      #     docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
+          docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
