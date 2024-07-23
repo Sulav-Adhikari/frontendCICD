@@ -4,6 +4,12 @@ on:
     branches:
       - main
 
+      env:
+  CONTEXT_PATH: .
+  DOCKER_PATH: ./Dockerfile
+  IMAGE_NAME: todo
+  ENVIRONMENT: dev
+      
 jobs:
   test-ssh:
     runs-on: ubuntu-latest
@@ -11,6 +17,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      # - name: copy env
+      #   run: |
+      #     cp /path/to/.env ./
+
+      - name: Build docker image
+        run: |
+          docker build -t ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} .
+        
+      - name: Save the docker image as tar file
+        run: |
+          mkdir -p ~/imagetar
+          docker save ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} > ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
+          ls ~/imagetar
 
       - name: Set up SSH
         run: |
@@ -30,8 +50,9 @@ jobs:
       - name: Verify Docker Context
         run: |
           docker context ls
-        # env:
-        #   CONTEXT_PATH: .
-        #   DOCKER_PATH: ./Dockerfile
-        #   IMAGE_NAME: todo
-        #   ENVIRONMENT: dev
+
+      # - name: Load the docker image into remote context
+      #   run: | 
+      #     docker context use ec2
+
+      #     docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
