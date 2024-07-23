@@ -5,12 +5,6 @@ on:
     types: [completed]
     branches: 
       - main
-  # repository_dispatch:
-  #   types:
-  #     - trigger-deploy
-  # push:
-  #   branches:
-  #     - main
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile

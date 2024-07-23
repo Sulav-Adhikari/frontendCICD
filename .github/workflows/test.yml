@@ -12,13 +12,3 @@ jobs:
 
       - name: Build
         run: echo "Building the project..."
-#   trigger-deploy:
-#     needs: build
-#     runs-on: ubuntu-latest
-#     steps: 
-#         - name: trigger Deploy
-#           uses: peter-evans/repository-dispatch@v2
-#           with: 
-#             token: ${{ secrets.PAT_TOKEN }}
-#             repository: Sulav-Adhikari/frontendCICD
-#             event-type: trigger-deploy
