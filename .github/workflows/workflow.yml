@@ -22,6 +22,14 @@ jobs:
       - name: Test SSH Connection
         run: |
           ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
+
+      - name: Set docker context 
+        run: |
+          docker context create ec2 --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
+
+      - name: Verify Docker Context
+        run: |
+          docker context ls
         # env:
         #   CONTEXT_PATH: .
         #   DOCKER_PATH: ./Dockerfile
