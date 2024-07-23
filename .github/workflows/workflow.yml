@@ -51,6 +51,11 @@ jobs:
         run: |
           docker context ls
 
+      - name: Load the docker image tar file to remote 
+        run: | 
+          scp -r ~/imagetar ${{secrets.USERNAME}}@${{secrets.HOST}}:/home/ubuntu
+
+
       - name: Load the docker image into remote context
         run: | 
           docker context use ec2
