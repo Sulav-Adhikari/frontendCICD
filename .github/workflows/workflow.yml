@@ -59,5 +59,8 @@ jobs:
       - name: Load the docker image into remote context
         run: | 
           docker context use ec2
-
           docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
+
+      - name: Deploy docker compose
+        run: |
+          /home/ubuntu/deploy.sh
