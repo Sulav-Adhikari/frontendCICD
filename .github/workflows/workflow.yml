@@ -53,7 +53,7 @@ jobs:
 
       - name: Load the docker image into remote context
         run: | 
-          docker context use$ {{ secrets.ONTEXT }}
+          docker context use ${{ secrets.CONTEXT }}
           docker load -i ~/imagetar/${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
 
       - name: Test SSH Connection
