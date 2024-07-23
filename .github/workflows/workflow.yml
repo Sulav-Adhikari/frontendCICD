@@ -38,7 +38,7 @@ jobs:
           ssh_cert: ${{ secrets.PUB_KEY }}
           ssh_key: ${{ secrets.KEY }}
 
-      - run: docker --context ec2 run -d nginx:alpine
+      - run: docker --context ubuntu-server run -d nginx:alpine
 
 
 
