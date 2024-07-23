@@ -21,24 +21,25 @@ jobs:
       #   run: |
       #     docker build -t ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} .
 
-      - name: SSh into server 
-        uses: appleboy/ssh-action@v1.0.3
-        with: 
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: whoami
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+          - name: Test SSH Connection
+          run: |
+            ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
 
-      - name: Add docker context
-        uses: arwynfr/actions-docker-context@v2
-        with:
-          docker_host: 'ssh://${{ secrets.USERNAME}}@${{ secrets.HOST }}'
-          context_name: 'ubuntu-server'
-          ssh_cert: ${{ secrets.PUB_KEY }}
-          ssh_key: ${{ secrets.KEY }}
+      # - name: Add docker context
+      #   uses: arwynfr/actions-docker-context@v2
+      #   with:
+      #     docker_host: 'ssh://${{ secrets.USERNAME}}@${{ secrets.HOST }}'
+      #     context_name: 'ubuntu-server'
+      #     ssh_cert: ${{ secrets.PUB_KEY }}
+      #     ssh_key: ${{ secrets.KEY }}
 
-      - run: docker --context ubuntu-server run -d nginx:alpine
+      # - run: docker --context ubuntu-server run -d nginx:alpine
 
 
 
