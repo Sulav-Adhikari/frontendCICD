@@ -20,6 +20,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with: 
+          ref: ${{ github.event.workflow_run.head_branch }}
+      - run: git branch
+      - run: env
 
       # - name: copy env
       #   run: |
