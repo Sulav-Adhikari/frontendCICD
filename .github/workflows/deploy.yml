@@ -6,7 +6,7 @@ on:
     types: 
       - completed
     branches: 
-      - dev
+      - main
 env:
   CONTEXT_PATH: .
   DOCKER_PATH: ./Dockerfile
