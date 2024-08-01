@@ -1,37 +1,12 @@
 name: Artifact Release
 on:
-#   workflow_dispatch:
-#     inputs:
-#       environment:
-#         description: 'Environment to deploy to'
-#         required: true
-#         type: choice
-#         options:
-#           - 'dev'
-#           - 'prod'
   pull_request:
     types: [ closed ]
-    # types: [synchronize, closed, opened]
     branches:
       - dev
       - main
 
-jobs:
-  resolve-env:
-    runs-on: ubuntu-latest
-    steps:
-      - name: resolve environment
-        run: |
-          branch_ref=${{ github.base_ref }}
-          if [[ "$branch_ref" == "main" ]] || ${{ contains(github.event.inputs.environment, 'prod') }}; then
-            echo "env_name=prod" >> $GITHUB_ENV
-          else
-            echo "env_name=dev" >> $GITHUB_ENV
-          fi
-    outputs:
-      env_name: '${{ env.env_name }}'
-
-      
+jobs:      
   release: 
     permissions:
       contents: write
@@ -92,6 +67,3 @@ jobs:
             automatic_release_tag: "${{ steps.prep.outputs.version }}"
             repo_token: "${{ secrets.GITHUB_TOKEN }}"
             files: ${{ steps.prep.outputs.artifact_name }}
-
-# else
-#   VERSION=v${{ steps.get-version.outputs.new_version }}+build.${BUILD_NUM}.${BUILD_ID}
