@@ -66,6 +66,7 @@ jobs:
           else
             new_version=$(semver bump patch "$current_version")
           fi
+          echo new_version=$new_version
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
       - name: Prepare artifact
@@ -86,6 +87,8 @@ jobs:
           mv dist.zip ${ARTIFACT_NAME}
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
+          echo artifact_name=$artifact_name
+
 
       - name: Create GitHub Release
         uses: "marvinpinto/action-automatic-releases@latest"
