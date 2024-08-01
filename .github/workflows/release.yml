@@ -1,0 +1,118 @@
+name: Artifact Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - 'dev'
+          - 'prod'
+  pull_request:
+    types: [synchronize, closed, opened]
+    branches:
+      - dev
+      - main
+
+jobs:
+  resolve-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: resolve environment
+        run: |
+          branch_ref=${{ github.base_ref }}
+          if [[ "$branch_ref" == "main" ]] || ${{ contains(github.event.inputs.environment, 'prod') }}; then
+            echo "env_name=prod" >> $GITHUB_ENV
+          else
+            echo "env_name=dev" >> $GITHUB_ENV
+          fi
+    outputs:
+      env_name: '${{ env.env_name }}'
+
+      
+  release: 
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps: 
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup semver
+        run: |
+          curl https://raw.githubusercontent.com/fsaintjacques/semver-tool/master/src/semver -o /usr/local/bin/semver
+          chmod +x /usr/local/bin/semver
+          semver --version
+      
+      - name: Current tag
+        id: get-version
+        run: |
+          git fetch --tags
+          current_version=$(git tag --sort=-version:refname | head -n 1 | cut -c2-)
+          echo "current_version=$current_version" >> $GITHUB_ENV
+
+          commit_message=$(git log -1 --pretty=%B)
+
+          if [ -z "$current_version" ]; then
+            new_version=1.0.0
+          elif [[ $commit_message =~ ^\[major\] ]]; then
+            new_version=$(semver bump major "$current_version")
+          elif [[ $commit_message =~ ^\[feat\] ]]; then
+            new_version=$(semver bump minor "$current_version")
+          else
+            new_version=$(semver bump patch "$current_version")
+          fi
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Prepare artifact
+        id: prep
+        run: |
+          BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
+          BUILD_ID=$(echo $GITHUB_SHA | head -c7)
+
+
+          if [[ ${{ github.event.pull_request.merged }} == 'true' ]]; then
+            VERSION=v${{ steps.get-version.outputs.new_version }}
+          else
+            VERSION=v${{ steps.get-version.outputs.new_version }}+build.${BUILD_NUM}.${BUILD_ID}
+          fi
+
+          ARTIFACT_NAME=${VERSION}.zip
+          zip -r dist.zip *.tf
+          mv dist.zip ${ARTIFACT_NAME}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          files: ${{ steps.prep.outputs.artifact_name }}
+
+
+
+
+            
+
+
+
+
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: '20'
+      #     cache: 'yarn'
+      
+      # - name: Install dependencies
+      #   run: yarn install
+
+      # - name: Semantic Release
+      #   id: semantic
+      #   run: npx semantic-release
+      #   env:
+ 
