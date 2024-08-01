@@ -33,6 +33,9 @@ jobs:
 
           commit_message=$(git log -1 --pretty=%B)
 
+          echo "Current version: $current_version"
+          echo "Commit message: $commit_message"
+
           if [ -z "$current_version" ]; then
             new_version=1.0.0
           elif [[ $commit_message =~ ^\[major\] ]]; then
