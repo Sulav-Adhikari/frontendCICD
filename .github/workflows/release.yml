@@ -87,7 +87,7 @@ jobs:
           mv dist.zip ${ARTIFACT_NAME}
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
-          echo artifact_name=$artifact_name
+          echo artifact_name=$ARTIFACT_NAME
 
 
       - name: Create GitHub Release
