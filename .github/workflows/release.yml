@@ -93,5 +93,6 @@ jobs:
       - name: Create GitHub Release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
+          automatic_release_tag: "${{ steps.prep.outputs.version }}"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           files: ${{ steps.prep.outputs.artifact_name }}
