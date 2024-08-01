@@ -1,5 +1,4 @@
 name: Artifact Release
-
 on:
   workflow_dispatch:
     inputs:
