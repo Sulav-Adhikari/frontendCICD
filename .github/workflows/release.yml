@@ -1,14 +1,14 @@
 name: Artifact Release
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        type: choice
-        options:
-          - 'dev'
-          - 'prod'
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Environment to deploy to'
+#         required: true
+#         type: choice
+#         options:
+#           - 'dev'
+#           - 'prod'
   pull_request:
     types: [synchronize, closed, opened]
     branches:
