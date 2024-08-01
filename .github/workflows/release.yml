@@ -40,9 +40,9 @@ jobs:
 
           if [ -z "$current_version" ]; then
             new_version=1.0.0
-          elif [[ $commit_message =~ ^\[major\] ]]; then
+          elif [[ $commit_message = major ]]; then
             new_version=$(semver bump major "$current_version")
-          elif [[ $commit_message =~ ^\[feat\] ]]; then
+          elif [[ $commit_message = feat ]]; then
             new_version=$(semver bump minor "$current_version")
           else
             new_version=$(semver bump patch "$current_version")
