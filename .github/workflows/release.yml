@@ -73,8 +73,6 @@ jobs:
       - name: Prepare artifact
         id: prep
         run: |
-          BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
-          BUILD_ID=$(echo $GITHUB_SHA | head -c7)
 
           if [[ ${{ github.event.pull_request.merged }} == 'true' ]]; then
             VERSION=v${{ steps.get-version.outputs.new_version }}
