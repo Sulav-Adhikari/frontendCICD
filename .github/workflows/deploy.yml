@@ -1,80 +1,98 @@
-name: Deploy
-on:
-  workflow_run:
-    workflows: 
-      - Test
-    types: 
-      - completed
-    branches: 
-      - main
-env:
-  CONTEXT_PATH: .
-  DOCKER_PATH: ./Dockerfile
-  IMAGE_NAME: todo
-  ENVIRONMENT: dev
+# name: Deploy
+# on:
+#   workflow_run:
+#     workflows: 
+#       - Test
+#     types: 
+#       - completed
+#     branches: 
+#       - main
+# env:
+#   CONTEXT_PATH: .
+#   DOCKER_PATH: ./Dockerfile
+#   IMAGE_NAME: todo
+#   ENVIRONMENT: dev
       
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   release: 
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+#     permissions:
+#       contents: write
+#       issues: write
+#       pull-requests: write
 
-      - name: Build docker image
-        run: |
-          docker build -t ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }} .
+#     runs-on: ubuntu-latest
 
-      - name: Save the docker image as tar file
-        run: |
-          docker save -o ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }}.tar ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }}
-
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+#     steps: 
+#       - name: checkout code
+#         uses: actions/checkout@v3
       
-      # - name: Test SSH Connection
-      #   run: |
-      #     ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '20'
+#           cache: 'yarn'
       
-      - name: Set docker context 
-        run: |
-          docker context create ${{ secrets.CONTEXT }} --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
-          docker context ls
-      
-      # - name: Load the docker image tar file to remote 
-      #   run: | 
-      #     scp -r ~/imagetar ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu
-      
-      - name: Load the docker image into remote context
-        run: |
-          docker context use ${{ secrets.CONTEXT }}
-          docker load -i ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }}.tar
-      
-      - name: Deploy in ec2
-        run: |
-          ssh -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} /home/ubuntu/deploy.sh
+#       - name: Install dependencies
+#         run: yarn install
 
-      
-# # v1.0.0
-# # vbreakingChange.editFeature.fix
+#       - name: Semantic Release
+#         id: semantic
+#         run: npx semantic-release
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.HUB_TOKEN }}
 
-# # doing through commit messages
-# # feat.refactor.fix
+# #   deploy:
+# #     runs-on: ubuntu-latest
 
-# - name: Set up Node.js
-#   uses: actions/setup-node@v3
-#   with:
-#     node-version: '20'
-#     cache: 'yarn'
+# #     steps:
+# #       - name: Checkout code
+# #         uses: actions/checkout@v3
 
-# - name: Install dependencies
-#   run: yarn install
-# - name: Semantic Release
-#   id: semantic
-#   run: npx semantic-release
-#   env:
-#     GITHUB_TOKEN: ${{ secrets.HUB_TOKEN }}
+# #       # - name: copy env
+# #       #   run: |
+# #       #     cp /path/to/.env ./
+
+# #       - name: Build docker image
+# #         run: |
+# #           docker build -t ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} .
+        
+# #       - name: Save the docker image as tar file
+# #         run: |
+# #           docker save -o ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}
+
+# #       - name: Set up SSH
+# #         run: |
+# #           mkdir -p ~/.ssh
+# #           echo "${{ secrets.KEY }}" > ~/.ssh/id_ed25519
+# #           chmod 600 ~/.ssh/id_ed25519
+# #           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+# #       # - name: Test SSH Connection
+# #       #   run: |
+# #       #     ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
+
+# #       - name: Set docker context 
+# #         run: |
+# #           docker context create ${{ secrets.CONTEXT }} --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
+# #           docker context ls
+
+# #       # - name: Load the docker image tar file to remote 
+# #       #   run: | 
+# #       #     scp -r ~/imagetar ${{secrets.USERNAME}}@${{secrets.HOST}}:/home/ubuntu
+
+# #       - name: Load the docker image into remote context
+# #         run: | 
+# #           docker context use ${{ secrets.CONTEXT }}
+# #           docker load -i ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
+
+# #       - name: Deploy in ec2
+# #         run: |
+# #           ssh -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} /home/ubuntu/deploy.sh
+
+# # # v1.0.0
+# # # vbreakingChange.editFeature.fix
+
+# # # doing through commit messages
+# # # feat.refactor.fix
+ 
