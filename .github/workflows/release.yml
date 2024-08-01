@@ -10,7 +10,8 @@ on:
 #           - 'dev'
 #           - 'prod'
   pull_request:
-    types: [synchronize, closed, opened]
+    types: [ closed ]
+    # types: [synchronize, closed, opened]
     branches:
       - dev
       - main
@@ -75,24 +76,24 @@ jobs:
           BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
 
-
           if [[ ${{ github.event.pull_request.merged }} == 'true' ]]; then
             VERSION=v${{ steps.get-version.outputs.new_version }}
-          else
-            VERSION=v${{ steps.get-version.outputs.new_version }}+build.${BUILD_NUM}.${BUILD_ID}
           fi
-
+            
           ARTIFACT_NAME=${VERSION}.zip
           zip -r dist.zip *.tf
           mv dist.zip ${ARTIFACT_NAME}
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
           echo artifact_name=$ARTIFACT_NAME
+          
+          
+          - name: Create GitHub Release
+          uses: "marvinpinto/action-automatic-releases@latest"
+          with:
+            automatic_release_tag: "${{ steps.prep.outputs.version }}"
+            repo_token: "${{ secrets.GITHUB_TOKEN }}"
+            files: ${{ steps.prep.outputs.artifact_name }}
 
-
-      - name: Create GitHub Release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          automatic_release_tag: "${{ steps.prep.outputs.version }}"
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          files: ${{ steps.prep.outputs.artifact_name }}
+# else
+#   VERSION=v${{ steps.get-version.outputs.new_version }}+build.${BUILD_NUM}.${BUILD_ID}
