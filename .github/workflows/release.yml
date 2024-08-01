@@ -56,6 +56,7 @@ jobs:
             new_version=$(semver bump patch "$current_version")
           fi
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          echo "new_version=$new_version"
 
       - name: Prepare artifact
         id: prep
