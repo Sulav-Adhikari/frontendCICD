@@ -31,7 +31,9 @@ jobs:
           current_version=$(git tag --sort=-version:refname | head -n 1 | cut -c2-)
           echo "current_version=$current_version" >> $GITHUB_ENV
 
-          commit_message=$(git log -1 --pretty=%B)
+          if [[ ${{ github.event.pull_request.merged }} == 'true' ]]; then
+            commit_message=$(git log -1 --pretty=%B)
+          fi
 
           echo "Current version: $current_version"
           echo "Commit message: $commit_message"
