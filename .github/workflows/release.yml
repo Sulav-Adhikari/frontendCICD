@@ -69,7 +69,7 @@ jobs:
           fi
             
           ARTIFACT_NAME=${VERSION}.zip
-          zip -r ${ARTIFACT_NAME} *.tf
+          zip -r dist.zip *.tf
           mv dist.zip ${ARTIFACT_NAME}
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
