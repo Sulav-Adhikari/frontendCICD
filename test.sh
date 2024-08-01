@@ -1,9 +1,9 @@
 #!/bin/bash
 export current_version=1
-export commit_message="major:fix"
+export commit_message="major"
 
-if [[ $commit_message =~ ^major: ]]; then
-  current_version=2
+if [[ $commit_message = fix ]]; then
+  current_version=true
+  echo "Current Version: $current_version"
 fi
 
-echo "Current Version: $current_version"
