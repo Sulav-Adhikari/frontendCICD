@@ -1,37 +1,16 @@
 name: Artifact Release
-
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        type: choice
-        options:
-          - 'dev'
-          - 'prod'
+  push:
+    branches:
+      - dev
+      
   pull_request:
-    types: [synchronize, closed, opened]
+    types: [closed]
     branches:
       - dev
       - main
 
-jobs:
-  resolve-env:
-    runs-on: ubuntu-latest
-    steps:
-      - name: resolve environment
-        run: |
-          branch_ref=${{ github.base_ref }}
-          if [[ "$branch_ref" == "main" ]] || ${{ contains(github.event.inputs.environment, 'prod') }}; then
-            echo "env_name=prod" >> $GITHUB_ENV
-          else
-            echo "env_name=dev" >> $GITHUB_ENV
-          fi
-    outputs:
-      env_name: '${{ env.env_name }}'
-
-      
+jobs:      
   release: 
     permissions:
       contents: write
@@ -40,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps: 
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Setup semver
@@ -56,63 +35,48 @@ jobs:
           current_version=$(git tag --sort=-version:refname | head -n 1 | cut -c2-)
           echo "current_version=$current_version" >> $GITHUB_ENV
 
-          commit_message=$(git log -1 --pretty=%B)
+          if [[ "${{ github.event.pull_request.merged }}" == 'true' ]]; then
+            message=$(git log -1 --pretty=%B)
+            commit_message=$(echo "$message" | grep -oP '^(feat|ci|debug|major|minor|patch)' | awk '{print $1}')
+          elif [[ "${{ github.event_name }}" == 'push' ]]; then
+            message=$(git log -1 --pretty=%B)
+            commit_message=$(echo "$message" | grep -oP '^(feat|ci|debug|major|minor|patch)' | awk '{print $1}')
+          fi
+
+          echo "Current version: $current_version"
+          echo "Commit message: $commit_message"
 
           if [ -z "$current_version" ]; then
             new_version=1.0.0
-          elif [[ $commit_message =~ ^\[major\] ]]; then
+          elif [[ $commit_message == major ]]; then
             new_version=$(semver bump major "$current_version")
-          elif [[ $commit_message =~ ^\[feat\] ]]; then
+          elif [[ $commit_message == feat ]]; then
             new_version=$(semver bump minor "$current_version")
           else
             new_version=$(semver bump patch "$current_version")
           fi
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          echo "new_version=$new_version"
 
       - name: Prepare artifact
         id: prep
         run: |
-          BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
-          BUILD_ID=$(echo $GITHUB_SHA | head -c7)
-
-
-          if [[ ${{ github.event.pull_request.merged }} == 'true' ]]; then
+          if [[ "${{ github.event.pull_request.merged }}" == 'true' ]]; then
             VERSION=v${{ steps.get-version.outputs.new_version }}
-          else
-            VERSION=v${{ steps.get-version.outputs.new_version }}+build.${BUILD_NUM}.${BUILD_ID}
+          elif [[ "${{ github.event_name }}" == 'push' ]]; then
+            VERSION=v${{ steps.get-version.outputs.new_version }}
           fi
-
+            
           ARTIFACT_NAME=${VERSION}.zip
           zip -r dist.zip *.tf
           mv dist.zip ${ARTIFACT_NAME}
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
-
+          echo "artifact_name=$ARTIFACT_NAME"
+          
       - name: Create GitHub Release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: marvinpinto/action-automatic-releases@latest
         with:
+          automatic_release_tag: "${{ steps.prep.outputs.version }}"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           files: ${{ steps.prep.outputs.artifact_name }}
-
-
-
-
-            
-
-
-
-
-      # - name: Set up Node.js
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: '20'
-      #     cache: 'yarn'
-      
-      # - name: Install dependencies
-      #   run: yarn install
-
-      # - name: Semantic Release
-      #   id: semantic
-      #   run: npx semantic-release
-      #   env:
- 
