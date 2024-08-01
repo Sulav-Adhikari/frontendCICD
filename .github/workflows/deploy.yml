@@ -14,85 +14,67 @@ env:
   ENVIRONMENT: dev
       
 jobs:
-  releases: 
-
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-
+  deploy:
     runs-on: ubuntu-latest
 
-    steps: 
-      - name: checkout code
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Build docker image
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }} .
+
+      - name: Save the docker image as tar file
+        run: |
+          docker save -o ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }}.tar ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }}
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
       
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: 'yarn'
+      # - name: Test SSH Connection
+      #   run: |
+      #     ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
       
-      - name: Install dependencies
-        run: yarn install
+      - name: Set docker context 
+        run: |
+          docker context create ${{ secrets.CONTEXT }} --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
+          docker context ls
+      
+      # - name: Load the docker image tar file to remote 
+      #   run: | 
+      #     scp -r ~/imagetar ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu
+      
+      - name: Load the docker image into remote context
+        run: |
+          docker context use ${{ secrets.CONTEXT }}
+          docker load -i ${{ env.IMAGE_NAME }}:${{ env.ENVIRONMENT }}.tar
+      
+      - name: Deploy in ec2
+        run: |
+          ssh -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} /home/ubuntu/deploy.sh
 
-      - name: Semantic Release
-        id: semantic
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.HUB_TOKEN }}
-
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
-
-#       # - name: copy env
-#       #   run: |
-#       #     cp /path/to/.env ./
-
-#       - name: Build docker image
-#         run: |
-#           docker build -t ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}} .
-        
-#       - name: Save the docker image as tar file
-#         run: |
-#           docker save -o ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}
-
-#       - name: Set up SSH
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.KEY }}" > ~/.ssh/id_ed25519
-#           chmod 600 ~/.ssh/id_ed25519
-#           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-
-#       # - name: Test SSH Connection
-#       #   run: |
-#       #     ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} whoami
-
-#       - name: Set docker context 
-#         run: |
-#           docker context create ${{ secrets.CONTEXT }} --docker "host=ssh://${{ secrets.USERNAME }}@${{ secrets.HOST }}"
-#           docker context ls
-
-#       # - name: Load the docker image tar file to remote 
-#       #   run: | 
-#       #     scp -r ~/imagetar ${{secrets.USERNAME}}@${{secrets.HOST}}:/home/ubuntu
-
-#       - name: Load the docker image into remote context
-#         run: | 
-#           docker context use ${{ secrets.CONTEXT }}
-#           docker load -i ${{env.IMAGE_NAME}}:${{env.ENVIRONMENT}}.tar
-
-#       - name: Deploy in ec2
-#         run: |
-#           ssh -p ${{ secrets.PORT }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} /home/ubuntu/deploy.sh
-
+      
 # # v1.0.0
 # # vbreakingChange.editFeature.fix
 
 # # doing through commit messages
 # # feat.refactor.fix
- 
+
+# - name: Set up Node.js
+#   uses: actions/setup-node@v3
+#   with:
+#     node-version: '20'
+#     cache: 'yarn'
+
+# - name: Install dependencies
+#   run: yarn install
+# - name: Semantic Release
+#   id: semantic
+#   run: npx semantic-release
+#   env:
+#     GITHUB_TOKEN: ${{ secrets.HUB_TOKEN }}
